@@ -173,11 +173,16 @@ class CrosswordCreator():
         """
         words_used = list(assignment.values())
 
+        # 1. all values must be distinct, no reusing the same word twice.
         if len(words_used) != len(set(words_used)):
             return False
+
+        # 2. every value must be the correct length for its variable.
         for var, word in assignment.items():
             if var.length != len(word):
                 return False
+
+            # 3. no conflicts with overlapping variables.
             for x in assignment:
                 for y in assignment:
                     if x != y and self.crossword.overlaps[x, y] is not None:
@@ -240,6 +245,11 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+        # Backtracking is just DFS but with pruning.
+        # Backtracking checks validity as it goes, at every node,
+        # and refuses to descend into a branch once it's known to be invalid.
+        # so instead of exploring all combinations and filtering at the end,
+        # it cuts off invalid subtrees the moment a conflict shows up.
         if self.assignment_complete(assignment):
             return assignment
 
@@ -249,6 +259,7 @@ class CrosswordCreator():
             new_assignment = assignment.copy()
             new_assignment[var] = value
 
+            # pruning
             if self.consistent(new_assignment):
                 result = self.backtrack(new_assignment)
                 if result is not None:
@@ -283,3 +294,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
